@@ -11,13 +11,14 @@ export class TestingService {
   }
 
   async deleteAll() {
-      await this.dataSource.query('TRUNCATE TABLE users')
-      await this.dataSource.query('TRUNCATE TABLE devices')
-      await this.dataSource.query('TRUNCATE TABLE tokens')
-      await this.dataSource.query('TRUNCATE TABLE likes')
-      await this.dataSource.query('TRUNCATE TABLE comments')
-      await this.dataSource.query('TRUNCATE TABLE posts')
-      await this.dataSource.query('TRUNCATE TABLE blogs')
+      await this.dataSource.query('TRUNCATE TABLE users CASCADE')
+    await this.dataSource.query('TRUNCATE TABLE devices CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE devices CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE tokens CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE likes CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE comments CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE posts CASCADE')
+      await this.dataSource.query('TRUNCATE TABLE blogs CASCADE')
   }
 
 }
