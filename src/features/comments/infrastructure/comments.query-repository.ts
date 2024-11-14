@@ -27,8 +27,10 @@ export class CommentsQueryRepository {
         }
         const comments = await this.dataSource.query(
           `
-                SELECT * 
-                FROM comments 
+                SELECT c.*, i.*, l.*
+                FROM comments c
+                INNER JOIN "commentatorInfo" i ON c."id" = i."commentId"
+                INNER JOIN "likesInfo" l ON c."id" = l."commentId"
                 WHERE "postId"=$1
                 ORDER BY "${generateQuery.sortBy}" ${generateQuery.sortDirection}
                 OFFSET $2
@@ -74,7 +76,10 @@ export class CommentsQueryRepository {
     async commentOutput(id: string) {
         const findedComment = await this.dataSource.query(
           `
-                    SELECT * FROM comments 
+                    SELECT c.*, i.*, l.*
+                    FROM comments c
+                    INNER JOIN "commentatorInfo" i ON c."id" = i."commentId"
+                    INNER JOIN "likesInfo" l ON c."id" = l."commentId"
                     WHERE "id" = $1          
           `,
           [id]
@@ -86,17 +91,17 @@ export class CommentsQueryRepository {
     }
 
     commentOutputMap(comment: any) {
-        const {id, content, commentatorInfoUserId, commentatorInfoUserLogin, likesInfoLikesCount, likesInfoDislikesCount, createdAt} = comment
+        const {id, content, likesCount, dislikesCount, createdAt, userId, userLogin} = comment
         return {
             id: id.toString(),
             content,
             commentatorInfo: {
-                userId: commentatorInfoUserId,
-                userLogin: commentatorInfoUserLogin
+                userId,
+                userLogin
             },
             likesInfo: {
-                likesCount: likesInfoLikesCount,
-                dislikesCount: likesInfoDislikesCount
+                likesCount,
+                dislikesCount
             },
             createdAt
         }

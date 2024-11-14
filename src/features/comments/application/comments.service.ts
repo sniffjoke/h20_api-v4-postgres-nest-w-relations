@@ -30,11 +30,7 @@ export class CommentsService {
       throw new NotFoundException('User not found');
     }
     const findedPost = await this.postsRepository.findPostById(postId);
-    const newCommentId = await this.commentsRepository.createComment(
-      commentDto,
-      { userId: user.id, userLogin: user.login },
-      postId,
-    );
+    const newCommentId = await this.commentsRepository.createComment(commentDto, user.id, postId);
     return newCommentId;
   }
 

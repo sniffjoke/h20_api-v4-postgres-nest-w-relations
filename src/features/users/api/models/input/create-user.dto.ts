@@ -18,7 +18,7 @@ export class CreateUserDto {
 }
 
 export class EmailConfirmationModel {
-  emailConfirmationConfirmationCode?: string;
-  emailConfirmationExpirationDate?: string;
-  emailConfirmationIsConfirmed: boolean;
+  confirmationCode?: string;
+  expirationDate?: string;
+  isConfirm: boolean;
 }

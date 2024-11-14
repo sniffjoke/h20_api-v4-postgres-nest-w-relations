@@ -22,26 +22,26 @@ export class UsersService {
     const isUserExists = await this.usersRepository.checkIsUserExists(createUserDto.login, createUserDto.email)
     const emailConfirmation: EmailConfirmationModel = this.createEmailConfirmation(isConfirm);
     if (!isConfirm) {
-      await this.sendActivationEmail(createUserDto.email, `${SETTINGS.PATH.API_URL}/?code=${emailConfirmation.emailConfirmationConfirmationCode as string}`);
+      await this.sendActivationEmail(createUserDto.email, `${SETTINGS.PATH.API_URL}/?code=${emailConfirmation.confirmationCode as string}`);
     }
     const hashPassword = await this.cryptoService.hashPassword(createUserDto.password);
-    const newUserData = { ...createUserDto, ...emailConfirmation, password: hashPassword };
-    const saveData = await this.usersRepository.createUser(newUserData);
+    const newUserData = { ...createUserDto, password: hashPassword };
+    const saveData = await this.usersRepository.createUser(newUserData, emailConfirmation);
     return saveData.id;
   }
 
   private createEmailConfirmation(isConfirm: boolean) {
     const emailConfirmationNotConfirm: EmailConfirmationModel = {
-      emailConfirmationIsConfirmed: false,
-      emailConfirmationConfirmationCode: this.uuidService.generate(),
-      emailConfirmationExpirationDate: add(new Date(), {
+      isConfirm: false,
+      confirmationCode: this.uuidService.generate(),
+      expirationDate: add(new Date(), {
           hours: 1,
           minutes: 30,
         },
       ).toISOString(),
     };
     const emailConfirmationIsConfirm: EmailConfirmationModel = {
-      emailConfirmationIsConfirmed: true,
+      isConfirm: true,
     };
     return isConfirm ? emailConfirmationIsConfirm : emailConfirmationNotConfirm;
   }
@@ -69,7 +69,7 @@ export class UsersService {
       throw new BadRequestException('Email already activate')
     }
     const emailConfirmation: EmailConfirmationModel = this.createEmailConfirmation(false);
-    await this.sendActivationEmail(email, `${SETTINGS.PATH.API_URL}/?code=${emailConfirmation.emailConfirmationConfirmationCode as string}`);
+    await this.sendActivationEmail(email, `${SETTINGS.PATH.API_URL}/?code=${emailConfirmation.confirmationCode as string}`);
     const updateUserInfo = await this.usersRepository.updateUserByResendEmail(
       isUserExists.id,
       emailConfirmation

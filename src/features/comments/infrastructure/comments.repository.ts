@@ -1,9 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { PostCreateModel, PostCreateModelWithParams } from '../../posts/api/models/input/create-post.input.model';
 import { CommentCreateModel } from '../api/models/input/create-comment.input.model';
-import { CommentatorInfoModel, LikesInfo } from '../api/models/output/comment.view.model';
 
 
 @Injectable()
@@ -13,26 +11,31 @@ export class CommentsRepository {
   ) {
   }
 
-  async createComment(comment: CommentCreateModel, commentatorInfo: CommentatorInfoModel, postId: string) {
-    const newPost = await this.dataSource.query(
+  async createComment(comment: CommentCreateModel, userId: number, postId: string) {
+    const newComment = await this.dataSource.query(
       `
                     INSERT INTO comments (
                       "content", 
-                      "commentatorInfoUserId", 
-                      "commentatorInfoUserLogin",
-                      "postId" 
+                      "postId" ,
+                      "userId"
                       )
-                    VALUES ($1, $2, $3, $4)
+                    VALUES ($1, $2, $3)
                     RETURNING *
           `,
       [
         comment.content,
-        commentatorInfo.userId,
-        commentatorInfo.userLogin,
-        postId
+        postId,
+        userId
       ],
     );
-    return newPost[0].id;
+    const newCommentLikesInfo = await this.dataSource.query(
+      `
+                INSERT INTO "likesInfo" ("commentId")
+                VALUES ($1)
+      `,
+      [newComment[0].id]
+    )
+    return newComment[0].id;
   }
 
   async findCommentById(id: string) {

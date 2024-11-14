@@ -11,17 +11,32 @@ export class UsersRepository {
   ) {
   }
 
-  async createUser(userData: any) {
+  async createUser(userData: any, emailConfirmation: EmailConfirmationModel) {
     const result = await this.dataSource.query(
-      'INSERT INTO users ("login", "email", "password", "emailConfirmationIsConfirm", "emailConfirmationConfirmationCode", "emailConfirmationExpirationDate") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id", "login", "email", "createdAt"', [
+      `
+                INSERT INTO users ("login", "email", "password") 
+                VALUES ($1, $2, $3)
+                RETURNING "id", "login", "email", "createdAt"
+            `,
+      [
         userData.login,
         userData.email,
         userData.password,
-        userData.emailConfirmationIsConfirmed,
-        userData.emailConfirmationConfirmationCode,
-        userData.emailConfirmationExpirationDate,
       ],
     );
+    const resultEmailConfirmation = await this.dataSource.query(
+      `
+            INSERT INTO "emailConfirmation" ("userId", "isConfirm", "confirmationCode", "expirationDate")
+            VALUES ($1, $2, $3, $4)
+            RETURNING *      
+      `,
+      [
+        result[0].id,
+        emailConfirmation.isConfirm,
+        emailConfirmation.confirmationCode,
+        emailConfirmation.expirationDate
+      ]
+    )
     return result[0];
   }
 
@@ -29,31 +44,35 @@ export class UsersRepository {
   async updateUserByActivateEmail(userId: any) {
     const updateUserInfo = await this.dataSource.query(
       `
-                UPDATE users 
-                SET "emailConfirmationIsConfirm" = true
-                WHERE id = $1
+                UPDATE "emailConfirmation" 
+                SET "isConfirm" = true
+                WHERE "userId" = $1
             `,
       [userId]);
     return updateUserInfo;
   }
 
-  async updateUserByResendEmail(userId: any, emailConfirmation: EmailConfirmationModel) {
+  async updateUserByResendEmail(userId: number, emailConfirmation: EmailConfirmationModel) {
     const updateUserInfo = await this.dataSource.query(
       `
-                UPDATE users 
-                SET "emailConfirmationExpirationDate" = $2, "emailConfirmationConfirmationCode" = $3
-                WHERE id = $1
+                UPDATE "emailConfirmation" 
+                SET "expirationDate" = $2, "confirmationCode" = $3
+                WHERE "userId" = $1
             `,
       [
         userId,
-        emailConfirmation.emailConfirmationExpirationDate,
-        emailConfirmation.emailConfirmationConfirmationCode,
+        emailConfirmation.expirationDate,
+        emailConfirmation.confirmationCode,
       ]);
     return updateUserInfo;
   }
 
   async findUserById(id: string) {
-    const findedUser = await this.dataSource.query('SELECT * FROM users WHERE id = $1', [id]);
+    const findedUser = await this.dataSource.query(
+      `
+                SELECT * FROM users WHERE id = $1
+            `,
+      [id]);
     if (!findedUser.length) {
       throw new NotFoundException('User not found');
     }
@@ -63,7 +82,7 @@ export class UsersRepository {
   async findUserByIdOrNull(id: string) {
     const findedUser = await this.dataSource.query('SELECT * FROM users WHERE id = $1', [id]);
     if (!findedUser.length) {
-      return null
+      return null;
     } else return findedUser[0];
   }
 
@@ -89,7 +108,24 @@ export class UsersRepository {
   }
 
   async findUserByCode(code: string) {
-    const findedUser = await this.dataSource.query('SELECT * FROM users WHERE "emailConfirmationConfirmationCode" = $1', [code]);
+    const findedUser = await this.dataSource.query(
+      `
+                SELECT u."id", u."login", e."confirmationCode" 
+                FROM users u
+                LEFT JOIN "emailConfirmation" e
+                ON e."userId" = u."id" 
+                WHERE "confirmationCode" = $1
+            `,
+      [code]);
+    const allUsers = await this.dataSource.query(
+      `
+                SELECT u."id", u."login", e."confirmationCode" 
+                FROM users u
+                LEFT JOIN "emailConfirmation" e
+                ON e."userId" = u."id" 
+            `,
+    );
+    console.log(allUsers);
     if (!findedUser.length) {
       throw new BadRequestException('Code not found');
     }
