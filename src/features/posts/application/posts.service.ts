@@ -90,7 +90,7 @@ export class PostsService {
                     SELECT *
                     FROM likes
                     WHERE "postId" = $1 AND "status" = $2
-                    ORDER BY "createdAt" DESC
+                    ORDER BY "addedAt" DESC
                     LIMIT 3
                               
           `,
