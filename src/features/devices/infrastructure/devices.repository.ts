@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 
 @Injectable()
@@ -27,7 +27,9 @@ export class DevicesRepository {
   async findManyDevices(filter: any) {
     const findedDevice = await this.dataSource.query(
       `
-                SELECT * FROM devices WHERE "userId" = $1 AND "ip" = $2 AND "title" = $3
+                SELECT * 
+                FROM devices 
+                WHERE "userId" = $1 AND "ip" = $2 AND "title" = $3
     `, [
         filter.userId,
         filter.ip,
@@ -39,7 +41,11 @@ export class DevicesRepository {
 
   async findDeviceByUserId(filter: any) {
     const findedDevice = await this.dataSource.query(
-      'SELECT * FROM devices WHERE "userId" = $1',
+      `
+                SELECT * 
+                FROM devices 
+                WHERE "userId" = $1
+      `,
       [filter.userId],
     );
     if (!findedDevice) {
@@ -50,7 +56,11 @@ export class DevicesRepository {
 
   async findDeviceByDeviceId(filter: any) {
     const findedDevice = await this.dataSource.query(
-      'SELECT * FROM devices WHERE "deviceId" = $1',
+      `
+                SELECT * 
+                FROM devices 
+                WHERE "deviceId" = $1
+      `,
       [filter.deviceId],
     );
     if (!findedDevice) {
@@ -75,8 +85,15 @@ export class DevicesRepository {
   }
 
   async deleteDeviceByDeviceId(filter: any) {
-    const finderDevice = this.findDeviceByDeviceId(filter.deviceId);
-    return await this.dataSource.query('DELETE FROM devices WHERE "deviceId" = $1', [filter.deviceId]);
+    const findedDevice = this.findDeviceByDeviceId(filter.deviceId);
+    return await this.dataSource.query(
+      `
+                DELETE FROM devices 
+                WHERE "deviceId" = $1'
+      `,
+      [
+        filter.deviceId
+      ]);
   }
 
   async deleteAllDevicesExceptCurrent(filter: any) {
