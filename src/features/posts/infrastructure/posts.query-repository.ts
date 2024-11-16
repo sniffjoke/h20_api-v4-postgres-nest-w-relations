@@ -27,6 +27,10 @@ export class PostsQueryRepository {
         throw new NotFoundException(`Blog with id ${blogId} not found`);
       }
     }
+    // SELECT p.*, e.*
+    // FROM posts p
+    // INNER JOIN "extendedLikesInfo" e
+    // ON e."postId" = p."id"
     const items = blogId ? await this.dataSource.query(
       `
                 SELECT * 
@@ -54,6 +58,7 @@ export class PostsQueryRepository {
         generateQuery.pageSize,
       ],
     );
+    console.log(items);
     const itemsOutput = items.map(item => this.postOutputMap(item));
     const resultPosts = new PaginationBaseModel<PostViewModel>(generateQuery, itemsOutput);
     return resultPosts;
@@ -87,23 +92,25 @@ export class PostsQueryRepository {
     };
   }
 
-  async postOutput(id: string) {
+  async postOutput(postId: string) {
     const findedPost = await this.dataSource.query(
       `
-                    SELECT * 
-                    FROM posts 
+                    SELECT p.*, e.* 
+                    FROM posts p
+                    INNER JOIN "extendedLikesInfo" e
+                    ON e."postId" = p."id" 
                     WHERE "id" = $1          
           `,
-      [id],
+      [postId],
     );
     if (!findedPost.length) {
-      throw new NotFoundException(`Post with id ${id} not found`);
+      throw new NotFoundException(`Post with id ${postId} not found`);
     }
     return this.postOutputMap(findedPost[0]);
   }
 
   postOutputMap(post: any) {
-    const { id, title, shortDescription, content, blogId, blogName, createdAt, extendedLikesInfoLikesCount, extendedLikesInfoDislikesCount} = post;
+    const { id, title, shortDescription, content, blogId, blogName, createdAt, likesCount, dislikesCount} = post;
     return {
       id: id.toString(),
       title,
@@ -112,8 +119,8 @@ export class PostsQueryRepository {
       blogId,
       blogName,
       extendedLikesInfo: {
-        likesCount: extendedLikesInfoLikesCount,
-        dislikesCount: extendedLikesInfoDislikesCount
+        likesCount,
+        dislikesCount
       },
       createdAt,
     };

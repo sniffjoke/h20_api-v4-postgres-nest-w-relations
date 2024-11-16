@@ -27,6 +27,13 @@ export class PostsRepository {
         blogName,
       ],
     );
+    const newExtLikesInfo = await this.dataSource.query(
+      `
+              INSERT INTO "extendedLikesInfo" VALUES ($1, $2, $3)
+      `, [
+        newPost[0].id, 0, 0
+      ]
+    )
     return newPost[0].id;
   }
 
