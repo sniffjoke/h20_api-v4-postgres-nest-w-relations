@@ -39,7 +39,17 @@ export class TokensRepository {
   }
 
   async updateStatusTokensAfterDeleteAllInDb(filter: any) {
-    return await this.dataSource.query('UPDATE tokens SET "blackList" = true WHERE "deviceId" <> $1 AND "userId" = $2', [filter.deviceId, filter.userId]);
+    return await this.dataSource.query(
+      `
+                UPDATE tokens 
+                SET "blackList" = true 
+                WHERE "deviceId" <> $1 AND "userId" = $2`
+      ,
+      [
+        filter.deviceId,
+        filter.userId,
+      ],
+    );
   }
 
   // Update status tokens after refresh tokens
@@ -62,11 +72,11 @@ export class TokensRepository {
             RETURNING *
             `,
       [
-      tokenData.userId,
-      tokenData.deviceId,
-      tokenData.refreshToken,
-      tokenData.blackList,
-    ]);
+        tokenData.userId,
+        tokenData.deviceId,
+        tokenData.refreshToken,
+        tokenData.blackList,
+      ]);
     return result;
   }
 
