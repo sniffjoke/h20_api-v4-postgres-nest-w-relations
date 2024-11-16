@@ -11,20 +11,28 @@ export class DevicesRepository {
   }
 
   async createSession(deviceData: any) {
-    const result = await this.dataSource.query('INSERT INTO devices ("userId", "deviceId", "title", "ip", "lastActiveDate") VALUES ($1, $2, $3, $4, $5) RETURNING *', [
-      deviceData.userId,
-      deviceData.deviceId,
-      deviceData.title,
-      deviceData.ip,
-      deviceData.lastActiveDate,
-    ]);
+    const result = await this.dataSource.query(
+      `
+                INSERT INTO devices ("userId", "deviceId", "title", "ip", "lastActiveDate") VALUES ($1, $2, $3, $4, $5) RETURNING *
+`, [
+        deviceData.userId,
+        deviceData.deviceId,
+        deviceData.title,
+        deviceData.ip,
+        deviceData.lastActiveDate,
+      ]);
     return result;
   }
 
   async findManyDevices(filter: any) {
     const findedDevice = await this.dataSource.query(
-      'SELECT * FROM devices WHERE "userId" = $1 AND "ip" = $2 AND "title" = $3',
-      [filter.userId, filter.ip, filter.title],
+      `
+                SELECT * FROM devices WHERE "userId" = $1 AND "ip" = $2 AND "title" = $3
+    `, [
+        filter.userId,
+        filter.ip,
+        filter.title,
+      ],
     );
     return findedDevice[0];
   }
@@ -79,8 +87,8 @@ export class DevicesRepository {
                 WHERE "deviceId" <> $1 AND "userId" = $2
             `,
       [
-                  filter.deviceId, filter.userId,
-                ],
+        filter.deviceId, filter.userId,
+      ],
     );
     return deleteDevices;
   }

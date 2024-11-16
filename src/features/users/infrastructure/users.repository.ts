@@ -117,15 +117,6 @@ export class UsersRepository {
                 WHERE "confirmationCode" = $1
             `,
       [code]);
-    const allUsers = await this.dataSource.query(
-      `
-                SELECT u."id", u."login", e."confirmationCode" 
-                FROM users u
-                LEFT JOIN "emailConfirmation" e
-                ON e."userId" = u."id" 
-            `,
-    );
-    console.log(allUsers);
     if (!findedUser.length) {
       throw new BadRequestException('Code not found');
     }
