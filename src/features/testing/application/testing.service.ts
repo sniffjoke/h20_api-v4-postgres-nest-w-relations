@@ -11,6 +11,7 @@ export class TestingService {
   }
 
   async deleteAll() {
+
     return await this.dataSource.query(
       `
               TRUNCATE TABLE users RESTART IDENTITY CASCADE;
