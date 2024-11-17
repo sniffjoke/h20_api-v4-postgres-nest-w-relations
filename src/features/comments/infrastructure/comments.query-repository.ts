@@ -96,7 +96,7 @@ export class CommentsQueryRepository {
             id: id.toString(),
             content,
             commentatorInfo: {
-                userId,
+                userId: userId.toString(),
                 userLogin
             },
             likesInfo: {

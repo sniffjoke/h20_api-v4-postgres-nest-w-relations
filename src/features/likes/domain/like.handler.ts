@@ -63,7 +63,6 @@ export class LikeHandler {
           findedLike[0].id,
         ],
       );
-      console.log(findedLike);
       const dislikeCount = findedLike[0].dislikesCount;
       const likeCount = findedLike[0].likesCount;
       if (likeStatus === LikeStatus.Like) {
@@ -160,9 +159,11 @@ export class LikeHandler {
     }
     const findedLike: any | null = await this.dataSource.query(
       `
-              SELECT * 
-              FROM likes
-              WHERE "userId" = $1 AND "commentId" = $2
+              SELECT l.*, i.* 
+              FROM likes l
+              INNER JOIN "likesInfo" i 
+              ON l."id" = i."commentId"
+              WHERE "userId" = $1 AND i."commentId" = $2
       `,
       [
         user.id,
@@ -183,24 +184,24 @@ export class LikeHandler {
           findedLike[0].id,
         ],
       );
-      const dislikeCount = comment.dislikesCount;
-      const likeCount = comment.likesCount;
+      const dislikeCount = findedLike[0].dislikesCount;
+      const likeCount = findedLike[0].likesCount;
       if (likeStatus === LikeStatus.Like) {
         if (dislikeCount > 0 && findedLike[0]?.status === LikeStatus.Dislike) {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "likesCount" = "likesCount" + 1, "dislikesCount" = "dislikesCount" - 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id],
           );
         } else {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "likesCount" = "likesCount" + 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id]
           );
@@ -210,18 +211,18 @@ export class LikeHandler {
         if (likeCount > 0 && findedLike[0]?.status === LikeStatus.Like) {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "likesCount" = "likesCount" - 1, "dislikesCount" = "dislikesCount" + 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id],
           );
         } else {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "dislikesCount" = "dislikesCount" + 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id]
           );
@@ -231,18 +232,18 @@ export class LikeHandler {
         if (findedLike[0]?.status === LikeStatus.Like) {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "likesCount" = "likesCount" - 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id]
           );
         } else {
           const updateCommentInfo = await this.dataSource.query(
             `
-                    UPDATE comments 
+                    UPDATE "likesInfo" 
                     SET "dislikesCount" = "dislikesCount" - 1
-                    WHERE "id" = $1
+                    WHERE "commentId" = $1
             `,
             [comment.id]
           );
