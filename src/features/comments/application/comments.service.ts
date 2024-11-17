@@ -38,7 +38,7 @@ export class CommentsService {
     const token = this.tokensService.getToken(bearerHeader);
     const decodedToken = this.tokensService.decodeToken(token);
     const findedComment = await this.commentsRepository.findCommentById(id);
-    const isOwner = this.usersCheckHandler.checkIsOwner(findedComment.commentatorInfoUserId, decodedToken._id.toString());
+    const isOwner = this.usersCheckHandler.checkIsOwner(findedComment.userId, decodedToken._id);
     if (isOwner) {
       const updateComment = await this.commentsRepository.updateComment(id, dto);
       return updateComment;
