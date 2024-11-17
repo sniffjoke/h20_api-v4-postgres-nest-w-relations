@@ -41,8 +41,10 @@ export class CommentsRepository {
   async findCommentById(id: string) {
     const findedComment = await this.dataSource.query(
       `
-                    SELECT * 
-                    FROM comments 
+                    SELECT c.*, i.*, l.*
+                    FROM comments c
+                    INNER JOIN "commentatorInfo" i ON c."id" = i."commentId"
+                    INNER JOIN "likesInfo" l ON c."id" = l."commentId"
                     WHERE "id" = $1          
           `,
       [id],
