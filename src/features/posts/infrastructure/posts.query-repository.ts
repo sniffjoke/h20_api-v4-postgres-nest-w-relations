@@ -33,10 +33,10 @@ export class PostsQueryRepository {
     // ON e."postId" = p."id"
     const items = blogId ? await this.dataSource.query(
       `
-               SELECT p.*, e.*
-    FROM posts p
-    INNER JOIN "extendedLikesInfo" e
-    ON e."postId" = p."id"
+                SELECT p.*, e.*
+                FROM posts p
+                INNER JOIN "extendedLikesInfo" e
+                ON e."postId" = p."id"
                 WHERE "blogId" = $1
                 ORDER BY "${generateQuery.sortBy}" ${generateQuery.sortDirection}
                 OFFSET $2
@@ -49,8 +49,10 @@ export class PostsQueryRepository {
       ],
     ) : await this.dataSource.query(
       `
-                SELECT * 
-                FROM posts 
+                SELECT p.*, e.*
+                FROM posts p
+                INNER JOIN "extendedLikesInfo" e
+                ON e."postId" = p."id"
                 ORDER BY "${generateQuery.sortBy}" ${generateQuery.sortDirection}
                 OFFSET $1
                 LIMIT $2        
