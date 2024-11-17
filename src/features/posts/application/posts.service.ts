@@ -96,13 +96,12 @@ export class PostsService {
           `,
       [post.id, LikeStatus.Like],
     );
-    console.log(likeDetails);
     const likeDetailsMap = await Promise.all(
       likeDetails.map(async (like: any) => {
         const user = await this.usersRepository.findUserById(like.userId);
         return {
           addedAt: like.addedAt,
-          userId: like.userId,
+          userId: like.userId.toString(),
           login: user.login,
         };
       }),
