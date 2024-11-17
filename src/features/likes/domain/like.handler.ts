@@ -133,6 +133,8 @@ export class LikeHandler {
   }
 
   async commentHandler(likeStatus: string, comment: any, user: any) {
+    console.log('comment: ', comment);
+    console.log('user: ', user);
     const isLikeObjectForCurrentUserExists: any | null = await this.dataSource.query(
       `
               SELECT * 
@@ -162,7 +164,7 @@ export class LikeHandler {
               SELECT l.*, i.* 
               FROM likes l
               INNER JOIN "likesInfo" i 
-              ON l."id" = i."commentId"
+              ON l."commentId" = i."commentId"
               WHERE "userId" = $1 AND i."commentId" = $2
       `,
       [
