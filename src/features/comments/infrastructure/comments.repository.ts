@@ -73,7 +73,7 @@ export class CommentsRepository {
   async deleteComment(commentId: string) {
     const deleteComment = await this.dataSource.query(
       `
-                    DELETE FROM comments 
+                    DELETE FROM comments
                     WHERE "id" = $1
                 `,
       [commentId],

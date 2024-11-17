@@ -22,7 +22,6 @@ export class CommentsController {
   @Get(':id')
   async getCommentById(@Param('id') id: string, @Req() req: Request) {
     const comment = await this.commentsRepository.findCommentById(id);
-    console.log(comment);
     const commentViewData = this.commentsQueryRepository.commentOutputMap(comment);
     const commentDataWithLike = await this.commentsService.generateNewCommentData(commentViewData, req.headers.authorization as string);
     return commentDataWithLike;

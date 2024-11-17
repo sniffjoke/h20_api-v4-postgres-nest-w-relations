@@ -75,7 +75,8 @@ export class PostsRepository {
     const findedPost = await this.findPostById(postId);
     const deleteBlog = await this.dataSource.query(
       `
-                    DELETE FROM posts WHERE "id" = $1 AND "blogId" = $2
+                    DELETE FROM posts  
+                    WHERE "id" = $1 AND "blogId" = $2
                 `,
       [
         postId,
