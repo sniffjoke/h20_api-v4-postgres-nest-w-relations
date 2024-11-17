@@ -117,7 +117,7 @@ export class PostsQueryRepository {
       title,
       shortDescription,
       content,
-      blogId,
+      blogId: blogId.toString(),
       blogName,
       extendedLikesInfo: {
         likesCount,
