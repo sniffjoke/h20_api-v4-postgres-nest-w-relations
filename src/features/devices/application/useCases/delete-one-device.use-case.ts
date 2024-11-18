@@ -31,7 +31,7 @@ export class DeleteOneDeviceUseCase
       throw new UnauthorizedException('Invalid refresh token');
     }
     const findToken = await this.tokensRepository.findToken({ deviceId: command.deviceId });
-    if (validateToken._id.toString() !== findToken?.userId) {
+    if (validateToken._id !== findToken?.userId) {
       throw new ForbiddenException('Not your device');
     }
     const findSession = await this.devicesRepository.findDeviceByDeviceId({ deviceId: command.deviceId });
