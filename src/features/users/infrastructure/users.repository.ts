@@ -97,7 +97,11 @@ export class UsersRepository {
   async findUserByEmail(email: string) {
     const findedUser = await this.dataSource.query(
       `
-                SELECT * FROM users WHERE email = $1
+                SELECT u."id", u."email", e."confirmationCode", e."isConfirm" 
+                FROM users u
+                LEFT JOIN "emailConfirmation" e
+                ON e."userId" = u."id" 
+                WHERE email = $1
             `,
       [email],
     );
@@ -110,7 +114,7 @@ export class UsersRepository {
   async findUserByCode(code: string) {
     const findedUser = await this.dataSource.query(
       `
-                SELECT u."id", u."login", e."confirmationCode" 
+                SELECT u."id", u."login", e."confirmationCode", e."isConfirm" 
                 FROM users u
                 LEFT JOIN "emailConfirmation" e
                 ON e."userId" = u."id" 

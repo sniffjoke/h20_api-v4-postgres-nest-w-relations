@@ -26,7 +26,7 @@ export class ResendEmailUseCase
 
   async execute(command: ResendEmailCommand) {
     const isUserExists = await this.usersRepository.findUserByEmail(command.email);
-    if (isUserExists.emailConfirmation.isConfirm) {
+    if (isUserExists.isConfirm) {
       throw new BadRequestException('Email already activate')
     }
     const emailConfirmation: EmailConfirmationModel = this.usersService.createEmailConfirmation(false);
