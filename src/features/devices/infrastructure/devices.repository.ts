@@ -89,7 +89,7 @@ export class DevicesRepository {
     return await this.dataSource.query(
       `
                 DELETE FROM devices 
-                WHERE "deviceId" = $1'
+                WHERE "deviceId" = $1
       `,
       [
         filter.deviceId
