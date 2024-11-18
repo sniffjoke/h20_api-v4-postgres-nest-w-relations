@@ -35,7 +35,14 @@ export class TokensRepository {
   // Update status tokens for devices
 
   async updateStatusTokensInDb(filter: any) {
-    return await this.dataSource.query('UPDATE tokens SET "blackList" = true WHERE "deviceId" = $1', [filter.deviceId]);
+    return await this.dataSource.query(
+      `
+                UPDATE tokens SET "blackList" = true WHERE "deviceId" = $1
+            `,
+      [
+        filter.deviceId
+      ]
+    );
   }
 
   async updateStatusTokensAfterDeleteAllInDb(filter: any) {
