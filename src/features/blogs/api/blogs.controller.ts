@@ -105,7 +105,6 @@ export class BlogsController {
     @UseGuards(BasicAuthGuard)
     async updatePost(@Body() dto: PostCreateModelWithParams, @Param() idParams: any) {
         const updatePost = await this.blogsService.updatePostFromBlogsUri(idParams.postId, idParams.blogId, dto);
-        console.log(updatePost);
         return updatePost
     }
 

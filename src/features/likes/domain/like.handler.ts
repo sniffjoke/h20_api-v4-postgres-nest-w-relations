@@ -133,8 +133,6 @@ export class LikeHandler {
   }
 
   async commentHandler(likeStatus: string, comment: any, user: any) {
-    console.log('comment: ', comment);
-    console.log('user: ', user);
     const isLikeObjectForCurrentUserExists: any | null = await this.dataSource.query(
       `
               SELECT * 

@@ -11,9 +11,11 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './features/auth/auth.module';
 import { UserIsExistConstraint } from './core/decorators/async/user-is-exist.decorator';
 import { BlogsModule } from './features/blogs/blogs.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
+    CqrsModule.forRoot(),
     ThrottlerModule.forRoot([{
       ttl: 10000,
       limit: 5,

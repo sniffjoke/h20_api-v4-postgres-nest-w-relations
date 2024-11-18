@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UuidModule } from 'nestjs-uuid';
 import { CryptoModule } from '../../core/modules/crypto/crypto.module';
 import { UsersQueryRepository } from './infrastructure/users.query-repositories';
+import { UsersCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -17,14 +18,16 @@ import { UsersQueryRepository } from './infrastructure/users.query-repositories'
   providers: [
     UsersService,
     UsersRepository,
-    UsersQueryRepository
+    UsersQueryRepository,
+    ...UsersCommandHandlers
   ],
   exports: [
     CryptoModule,
     UuidModule,
     UsersService,
     UsersRepository,
-    UsersQueryRepository
+    UsersQueryRepository,
+    ...UsersCommandHandlers
   ],
 })
 export class UsersModule {

@@ -1,10 +1,10 @@
-import { Module } from "@nestjs/common";
-import { AuthController } from "./api/auth.controller";
-import { AuthService } from "./application/auth.service";
-import { UsersModule } from "../users/users.module";
+import { Module } from '@nestjs/common';
+import { AuthController } from './api/auth.controller';
+import { UsersModule } from '../users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TokensModule } from '../tokens/tokens.module';
 import { DevicesModule } from '../devices/devices.module';
+import { AuthCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -14,8 +14,7 @@ import { DevicesModule } from '../devices/devices.module';
     TypeOrmModule.forFeature([]),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-  ],
+  providers: [...AuthCommandHandlers],
 })
-export class AuthModule {}
+export class AuthModule {
+}
