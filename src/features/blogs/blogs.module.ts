@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
 import { BlogsController } from "./api/blogs.controller";
-import { BlogsService } from "./application/blogs.service";
 import { BlogsRepository } from "./infrastructure/blogs.repository";
 import { BlogsQueryRepository } from "./infrastructure/blogs.query-repository";
 import { PostsModule } from "../posts/posts.module";
+import { BlogsCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -11,14 +11,14 @@ import { PostsModule } from "../posts/posts.module";
   ],
   controllers: [BlogsController],
   providers: [
-    BlogsService,
     BlogsRepository,
     BlogsQueryRepository,
+    ...BlogsCommandHandlers
   ],
   exports: [
-    BlogsService,
     BlogsRepository,
-    BlogsQueryRepository
+    BlogsQueryRepository,
+    ...BlogsCommandHandlers
   ]
 })
 export class BlogsModule {

@@ -35,9 +35,13 @@ export class CommentsService {
   }
 
   async updateCommentById(id: string, dto: CommentCreateModel, bearerHeader: string) {
+    console.log(1);
     const token = this.tokensService.getToken(bearerHeader);
+    console.log(2);
     const decodedToken = this.tokensService.decodeToken(token);
+    console.log(3);
     const findedComment = await this.commentsRepository.findCommentById(id);
+    console.log(4);
     const isOwner = this.usersCheckHandler.checkIsOwner(findedComment.userId, decodedToken._id);
     if (isOwner) {
       const updateComment = await this.commentsRepository.updateComment(id, dto);

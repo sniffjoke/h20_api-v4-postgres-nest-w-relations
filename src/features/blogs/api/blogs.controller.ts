@@ -10,7 +10,6 @@ import {
     Query, Req,
     UseGuards,
 } from '@nestjs/common';
-import {BlogsService} from "../application/blogs.service";
 import {BlogsQueryRepository} from "../infrastructure/blogs.query-repository";
 import {BlogCreateModel} from "./models/input/create-blog.input.model";
 import { PostCreateModelWithParams } from '../../posts/api/models/input/create-post.input.model';
@@ -18,15 +17,26 @@ import {PostsService} from "../../posts/application/posts.service";
 import {PostsQueryRepository} from "../../posts/infrastructure/posts.query-repository";
 import { BasicAuthGuard } from '../../../core/guards/basic-auth.guard';
 import {Request} from 'express';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateBlogCommand } from '../application/useCases/create-blog.use-case';
+import { UpdateBlogCommand } from '../application/useCases/update-blog.use-case';
+import { DeleteBlogCommand } from '../application/useCases/delete-blog.use-case';
+import {
+    UpdatePostWithBlogInParamsCommand,
+    UpdatePostWithBlogInParamsUseCase,
+} from '../application/useCases/update-post-from-blogs-in-params.use-case';
+import { DeletePostWithBlogInParamsCommand } from '../application/useCases/delete-post-from-blogs-in-params.use-case';
 
 @Controller()
 export class BlogsController {
     constructor(
-        private readonly blogsService: BlogsService,
+        private readonly commandBus: CommandBus,
         private readonly blogsQueryRepository: BlogsQueryRepository,
         private readonly postsService: PostsService,
         private readonly postsQueryRepository: PostsQueryRepository
     ) {}
+
+// TODO: метод execute pattern (service)
 
     @Get('blogs')
     async getAll(@Query() query: any) {
@@ -34,41 +44,10 @@ export class BlogsController {
         return blogsWithQuery
     }
 
-    @Get('sa/blogs')
-    @UseGuards(BasicAuthGuard)
-    async getAllBlogs(@Query() query: any) {
-        const blogsWithQuery = await this.blogsQueryRepository.getAllBlogsWithQuery(query)
-        return blogsWithQuery
-    }
-
-    @Post('sa/blogs')
-    @UseGuards(BasicAuthGuard)
-    async createBlog(@Body() dto: BlogCreateModel) {
-        const blogId = await this.blogsService.createBlog(dto)
-        const newBlog = await this.blogsQueryRepository.blogOutput(blogId)
-        return newBlog
-    }
-
     @Get('blogs/:id')
     async getBlogById(@Param('id') id: string) {
         const blog = await this.blogsQueryRepository.blogOutput(id)
         return blog
-    }
-
-    @Put('sa/blogs/:id')
-    @HttpCode(204)
-    @UseGuards(BasicAuthGuard)
-    async updateBlogById(@Param('id') id: string, @Body() dto: BlogCreateModel) {
-        const updateBlog = await this.blogsService.updateBlog(id, dto)
-        return updateBlog
-    }
-
-    @Delete('sa/blogs/:id')
-    @HttpCode(204)
-    @UseGuards(BasicAuthGuard)
-    async deleteBlog(@Param('id') id: string) {
-        const deleteBlog = await this.blogsService.deleteBlog(id)
-        return deleteBlog
     }
 
     @Get('blogs/:id/posts')
@@ -80,6 +59,40 @@ export class BlogsController {
             items: newData
         };
     }
+
+    // --------------------- SA ------------------------ //
+    @Get('sa/blogs')
+    @UseGuards(BasicAuthGuard)
+    async getAllBlogs(@Query() query: any) {
+        const blogsWithQuery = await this.blogsQueryRepository.getAllBlogsWithQuery(query)
+        return blogsWithQuery
+    }
+
+    @Post('sa/blogs')
+    @UseGuards(BasicAuthGuard)
+    async createBlog(@Body() dto: BlogCreateModel) {
+        const blogId = await this.commandBus.execute(new CreateBlogCommand(dto))
+        const newBlog = await this.blogsQueryRepository.blogOutput(blogId)
+        return newBlog
+    }
+
+    @Put('sa/blogs/:id')
+    @HttpCode(204)
+    @UseGuards(BasicAuthGuard)
+    async updateBlogById(@Param('id') id: string, @Body() dto: BlogCreateModel) {
+        const updateBlog = await this.commandBus.execute(new UpdateBlogCommand(id, dto))
+        return updateBlog
+    }
+
+    @Delete('sa/blogs/:id')
+    @HttpCode(204)
+    @UseGuards(BasicAuthGuard)
+    async deleteBlog(@Param('id') id: string) {
+        const deleteBlog = await this.commandBus.execute(new DeleteBlogCommand(id))
+        return deleteBlog
+    }
+
+    // --------------------- SA/posts ------------------------ //
 
     @Get('sa/blogs/:id/posts')
     async getAllPostsWithBlogId(@Param('id') id: string, @Query() query: any, @Req() req: Request) {
@@ -104,7 +117,7 @@ export class BlogsController {
     @HttpCode(204)
     @UseGuards(BasicAuthGuard)
     async updatePost(@Body() dto: PostCreateModelWithParams, @Param() idParams: any) {
-        const updatePost = await this.blogsService.updatePostFromBlogsUri(idParams.postId, idParams.blogId, dto);
+        const updatePost = await this.commandBus.execute(new UpdatePostWithBlogInParamsCommand(idParams.postId, idParams.blogId, dto));
         return updatePost
     }
 
@@ -112,7 +125,7 @@ export class BlogsController {
     @HttpCode(204)
     @UseGuards(BasicAuthGuard)
     async deletePost(@Param() idParams: any) {
-        const deletePost = await this.blogsService.deletePostFromBlogsUri(idParams.postId, idParams.blogId);
+        const deletePost = await this.commandBus.execute(new DeletePostWithBlogInParamsCommand(idParams.postId, idParams.blogId));
         return deletePost
     }
 

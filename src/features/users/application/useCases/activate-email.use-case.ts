@@ -21,7 +21,6 @@ export class ActivateEmailUseCase
 
   async execute(command: ActivateEmailCommand) {
     const isUserExists = await this.usersRepository.findUserByCode(command.code);
-    console.log(isUserExists);
     if (isUserExists.isConfirm) {
       throw new BadRequestException('Code already activate');
     }
