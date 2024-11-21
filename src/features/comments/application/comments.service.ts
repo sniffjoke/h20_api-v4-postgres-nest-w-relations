@@ -1,63 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CommentCreateModel } from '../api/models/input/create-comment.input.model';
+import { Injectable} from '@nestjs/common';
 import { TokensService } from '../../tokens/application/tokens.service';
 import { CommentViewModel } from '../api/models/output/comment.view.model';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
-import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { LikeStatus } from '../../posts/api/models/output/post.view.model';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { UsersCheckHandler } from '../../users/domain/users.check-handler';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly tokensService: TokensService,
     private readonly usersRepository: UsersRepository,
-    private readonly postsRepository: PostsRepository,
     private readonly commentsRepository: CommentsRepository,
-    private readonly usersCheckHandler: UsersCheckHandler,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
-  }
-
-  async createComment(commentDto: CommentCreateModel, postId: string, bearerHeader: string) {
-    const token = this.tokensService.getToken(bearerHeader);
-    const decodedToken = this.tokensService.decodeToken(token);
-    const user = await this.usersRepository.findUserById(decodedToken._id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    const findedPost = await this.postsRepository.findPostById(postId);
-    const newCommentId = await this.commentsRepository.createComment(commentDto, user.id, postId);
-    return newCommentId;
-  }
-
-  async updateCommentById(id: string, dto: CommentCreateModel, bearerHeader: string) {
-    console.log(1);
-    const token = this.tokensService.getToken(bearerHeader);
-    console.log(2);
-    const decodedToken = this.tokensService.decodeToken(token);
-    console.log(3);
-    const findedComment = await this.commentsRepository.findCommentById(id);
-    console.log(4);
-    const isOwner = this.usersCheckHandler.checkIsOwner(findedComment.userId, decodedToken._id);
-    if (isOwner) {
-      const updateComment = await this.commentsRepository.updateComment(id, dto);
-      return updateComment;
-    }
-  }
-
-  async deleteCommentById(id: string, bearerHeader: string) {
-    const token = this.tokensService.getToken(bearerHeader);
-    const decodedToken = this.tokensService.decodeToken(token);
-    const findedComment = await this.commentsRepository.findCommentById(id);
-    const isOwner = this.usersCheckHandler.checkIsOwner(findedComment.userId, decodedToken._id);
-    if (isOwner) {
-      const deleteComment = await this.commentsRepository.deleteComment(id);
-      return deleteComment;
-    }
   }
 
   async updateCommentByIdWithLikeStatus(bearerHeader: string, commentId: string) {

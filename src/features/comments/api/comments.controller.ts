@@ -7,6 +7,9 @@ import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentCreateModel } from './models/input/create-comment.input.model';
 import { LikeHandler } from '../../likes/domain/like.handler';
 import { CreateLikeInput } from '../../likes/api/models/input/create-like.input.model';
+import { CommandBus } from '@nestjs/cqrs';
+import { UpdateCommentCommand } from '../application/useCases/update-comment.use-case';
+import { DeleteCommentCommand } from '../application/useCases/delete-comment.use-case';
 
 @Controller('comments')
 export class CommentsController {
@@ -14,7 +17,8 @@ export class CommentsController {
     private readonly commentsService: CommentsService,
     private readonly commentsRepository: CommentsRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
-    private readonly likeHandler: LikeHandler
+    private readonly likeHandler: LikeHandler,
+    private readonly commandBus: CommandBus
   ) {
 
   }
@@ -32,14 +36,14 @@ export class CommentsController {
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   async updateCommentById(@Body() dto: CommentCreateModel, @Param('id') id: string, @Req() req: Request) {
-    return await this.commentsService.updateCommentById(id, dto, req.headers.authorization as string);
+    return await this.commandBus.execute(new UpdateCommentCommand(dto, id, req.headers.authorization as string));
   }
 
   @Delete(':id')
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   async deleteCommentById(@Param('id') id: string, @Req() req: Request) {
-   return await this.commentsService.deleteCommentById(id, req.headers.authorization as string)
+   return await this.commandBus.execute(new DeleteCommentCommand(id, req.headers.authorization as string))
   }
 
   @Put(':id/like-status')

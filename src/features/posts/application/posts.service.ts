@@ -3,7 +3,6 @@ import { PostsRepository } from '../infrastructure/posts.repository';
 import { PostCreateModel } from '../api/models/input/create-post.input.model';
 import { TokensService } from '../../tokens/application/tokens.service';
 import { LikeStatus } from '../api/models/output/post.view.model';
-import { BlogsRepository } from '../../blogs/infrastructure/blogs.repository';
 import { UsersRepository } from '../../users/infrastructure/users.repository';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -14,33 +13,8 @@ export class PostsService {
     private readonly postsRepository: PostsRepository,
     private readonly tokensService: TokensService,
     private readonly usersRepository: UsersRepository,
-    private readonly blogsRepository: BlogsRepository,
     @InjectDataSource() private readonly dataSource: DataSource,
   ) {
-  }
-
-  async createPost(post: PostCreateModel) {
-    const findedBlog = await this.blogsRepository.findBlogById(post.blogId);
-    const newPostId = await this.postsRepository.createPost(post, findedBlog.name);
-    return newPostId;
-  }
-
-  async updatePost(id: string, dto: PostCreateModel) {
-    // const post = await this.postModel.findOne({_id: id})
-    // if (!post) {
-    //     throw new NotFoundException(`Post with id ${id} not found`)
-    // }
-    // const updatePost = await this.postsRepository.updatePost(post.id, dto)
-    // return updatePost
-  }
-
-  async deletePost(id: string) {
-    // const findedPost = await this.postModel.findById(id)
-    // if (!findedPost) {
-    //     throw new NotFoundException(`Post with id ${id} not found`)
-    // }
-    // const deletePost = await this.postModel.deleteOne({_id: id})
-    // return deletePost
   }
 
   async updatePostByIdWithLikeStatus(bearerHeader: string, postId: string) {
@@ -126,3 +100,21 @@ export class PostsService {
   }
 
 }
+
+// async updatePost(id: string, dto: PostCreateModel) {
+// const post = await this.postModel.findOne({_id: id})
+// if (!post) {
+//     throw new NotFoundException(`Post with id ${id} not found`)
+// }
+// const updatePost = await this.postsRepository.updatePost(post.id, dto)
+// return updatePost
+// }
+
+// async deletePost(id: string) {
+// const findedPost = await this.postModel.findById(id)
+// if (!findedPost) {
+//     throw new NotFoundException(`Post with id ${id} not found`)
+// }
+// const deletePost = await this.postModel.deleteOne({_id: id})
+// return deletePost
+// }

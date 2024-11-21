@@ -8,6 +8,7 @@ import { CommentsModule } from "../comments/comments.module";
 import { UsersModule } from '../users/users.module';
 import { TokensService } from '../tokens/application/tokens.service';
 import { LikesModule } from '../likes/likes.module';
+import { PostsCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -18,16 +19,18 @@ import { LikesModule } from '../likes/likes.module';
   ],
   controllers: [PostsController],
   providers: [
-    PostsService,
     PostsRepository,
     PostsQueryRepository,
     TokensService,
+    PostsService,
+    ...PostsCommandHandlers
   ],
   exports: [
     forwardRef(() => BlogsModule),
-    PostsService,
     PostsRepository,
-    PostsQueryRepository
+    PostsQueryRepository,
+    PostsService,
+    ...PostsCommandHandlers
   ],
 })
 export class PostsModule {}

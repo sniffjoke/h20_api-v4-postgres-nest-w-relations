@@ -10,6 +10,9 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { LikeHandler } from '../../likes/domain/like.handler';
 import { CreateLikeInput } from '../../likes/api/models/input/create-like.input.model';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../application/useCases/create-post.use-case';
+import { CreateCommentCommand } from '../../comments/application/useCases/create-comment.use-case';
 
 @Controller()
 export class PostsController {
@@ -18,7 +21,8 @@ export class PostsController {
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly commentsService: CommentsService,
     private readonly commentsQueryRepository: CommentsQueryRepository,
-    private readonly likeHandler: LikeHandler
+    private readonly likeHandler: LikeHandler,
+    private readonly commandBus: CommandBus
   ) {
 
   }
@@ -36,39 +40,16 @@ export class PostsController {
   @Post('sa/posts')
   @UseGuards(BasicAuthGuard)
   async createPost(@Body() dto: PostCreateModel, @Req() req: Request) {
-    const postId = await this.postsService.createPost(dto);
+    const postId = await this.commandBus.execute(new CreatePostCommand(dto));
     const newPost = await this.postsQueryRepository.postOutput(postId);
     const postWithDetails = await this.postsService.generateOnePostWithLikesDetails(newPost, req.headers.authorization as string)
     return postWithDetails;
   }
 
-  @Get('posts/:id')
-  async getPostById(@Param('id') id: string, @Req() req: Request) {
-    const findedPost = await this.postsQueryRepository.postOutput(id);
-    const postWithDetails = await this.postsService.generateOnePostWithLikesDetails(findedPost, req.headers.authorization as string)
-    return postWithDetails;
-  }
-
-  @Put('sa/posts/:id')
-  @HttpCode(204)
-  @UseGuards(BasicAuthGuard)
-  async updatePostById(@Param('id') id: string, @Body() dto: PostCreateModel) {
-    const updatePost = await this.postsService.updatePost(id, dto);
-    return updatePost;
-  }
-
-  @Delete('sa/posts/:id')
-  @HttpCode(204)
-  @UseGuards(BasicAuthGuard)
-  async deletePost(@Param('id') id: string) {
-    const deletePost = await this.postsService.deletePost(id);
-    return deletePost;
-  }
-
   @Post('posts/:id/comments')
   @UseGuards(JwtAuthGuard)
   async createComment(@Body() dto: CommentCreateModel, @Param('id') postId: string, @Req() req: Request) {
-    const commentId = await this.commentsService.createComment(dto, postId, req.headers.authorization as string);
+    const commentId = await this.commandBus.execute(new CreateCommentCommand(dto, postId, req.headers.authorization as string));
     const newComment = await this.commentsQueryRepository.commentOutput(commentId);
     const newCommentData = this.commentsService.addStatusPayload(newComment)
     return newCommentData;

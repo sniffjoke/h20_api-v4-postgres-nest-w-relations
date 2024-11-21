@@ -10,6 +10,7 @@ import { UsersRepository } from '../users/infrastructure/users.repository';
 import { UsersCheckHandler } from '../users/domain/users.check-handler';
 import { LikeHandler } from '../likes/domain/like.handler';
 import { LikesModule } from '../likes/likes.module';
+import { CommentsCommandHandlers } from './application/useCases';
 
 @Module({
   imports: [
@@ -25,12 +26,14 @@ import { LikesModule } from '../likes/likes.module';
     TokensService,
     UsersRepository,
     UsersCheckHandler,
-    LikeHandler
+    LikeHandler,
+    ...CommentsCommandHandlers
   ],
   exports: [
     CommentsService,
     CommentsRepository,
-    CommentsQueryRepository
+    CommentsQueryRepository,
+    ...CommentsCommandHandlers
   ]
 })
 export class CommentsModule {
