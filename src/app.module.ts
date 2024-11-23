@@ -12,6 +12,10 @@ import { AuthModule } from './features/auth/auth.module';
 import { UserIsExistConstraint } from './core/decorators/async/user-is-exist.decorator';
 import { BlogsModule } from './features/blogs/blogs.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import configuration, { validate } from './core/settings/configuration';
+import { Environments } from './core/settings/env/env-settings';
+
+// import configuration from './core/settings/configuration';
 
 @Module({
   imports: [
@@ -21,8 +25,15 @@ import { CqrsModule } from '@nestjs/cqrs';
       limit: 5,
     }]),
     ConfigModule.forRoot({
-      envFilePath: '.development.env',
       isGlobal: true,
+      load: [configuration],
+      validate: validate,
+      ignoreEnvFile:
+        process.env.ENV !== Environments.DEVELOPMENT &&
+        process.env.ENV !== Environments.TEST &&
+        process.env.ENV !== Environments.PRODUCTION,
+      // envFilePath: ['.development.env', '.test.env'],
+      envFilePath: `.${process.env.NODE_ENV}.env`
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -55,7 +66,8 @@ import { CqrsModule } from '@nestjs/cqrs';
   ],
   controllers: [],
   providers: [
-    UserIsExistConstraint
+    UserIsExistConstraint,
   ],
 })
-export class AppModule {}
+export class AppModule {
+}

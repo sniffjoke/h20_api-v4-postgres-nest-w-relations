@@ -6,6 +6,8 @@ import { useContainer } from "class-validator";
 import { BadRequestExceptionFilter } from './core/exceptions/exception-filters/bad-request-exception-filter';
 import cookieParser from 'cookie-parser'
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ConfigurationType } from './core/settings/configuration';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -37,6 +39,17 @@ async function bootstrap() {
     }),
   );
   app.use(cookieParser())
-  await app.listen(SETTINGS.PORT, () => console.log('DB connect'));
+  const configService = app.get(ConfigService<ConfigurationType, true>);
+  const apiSettings = configService.get('apiSettings', { infer: true });
+  const environmentSettings = configService.get('environmentSettings', {
+    infer: true,
+  });
+  await app.listen(
+    SETTINGS.PORT,
+    () => {
+      console.log('DB connect');
+      console.log('ENV: ', environmentSettings.currentEnv);
+    }
+  );
 }
 bootstrap();
