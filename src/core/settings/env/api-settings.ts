@@ -1,9 +1,13 @@
-import { IsNumber } from 'class-validator';
-import { EnvironmentVariable } from '../configuration';
+import { IsNumber } from "class-validator";
+import { EnvironmentVariable } from "./configuration";
 
 export class ApiSettings {
-  constructor(private environmentVariables: EnvironmentVariable) {
-  }
+  constructor(private environmentVariables: EnvironmentVariable) {}
+
   @IsNumber()
   PORT: number = Number(this.environmentVariables.PORT);
+  API_URL: string = this.environmentVariables.API_URL;
+  JWT_SECRET_REFRESH_TOKEN: string = this.environmentVariables.JWT_SECRET_REFRESH_TOKEN;
+  JWT_SECRET_ACCESS_TOKEN: string = this.environmentVariables.JWT_SECRET_ACCESS_TOKEN;
+  ADMIN: string = this.environmentVariables.ADMIN;
 }

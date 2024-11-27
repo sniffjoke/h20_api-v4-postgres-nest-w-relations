@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
-import { SETTINGS } from './core/settings/settings';
+import { ConfigModule} from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UsersModule } from './features/users/users.module';
 import { TestingModule } from './features/testing/testing.module';
 import { TokensModule } from './features/tokens/tokens.module';
 import { DevicesModule } from './features/devices/devices.module';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { AuthModule } from './features/auth/auth.module';
 import { UserIsExistConstraint } from './core/decorators/async/user-is-exist.decorator';
 import { BlogsModule } from './features/blogs/blogs.module';
 import { CqrsModule } from '@nestjs/cqrs';
-import configuration, { validate } from './core/settings/configuration';
 import { Environments } from './core/settings/env/env-settings';
+import  { TypeOrmConfigService } from './core/settings/database.config';
+import { MailSendModule } from './core/settings/mailer.module';
+import configuration, { validate } from './core/settings/env/configuration';
 
-// import configuration from './core/settings/configuration';
+// console.log('.' + (process.env.ENV as string).toLowerCase() + '.env');
 
 @Module({
   imports: [
@@ -27,36 +27,17 @@ import { Environments } from './core/settings/env/env-settings';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      validate: validate,
+      validate,
       ignoreEnvFile:
         process.env.ENV !== Environments.DEVELOPMENT &&
-        process.env.ENV !== Environments.TEST &&
-        process.env.ENV !== Environments.PRODUCTION,
-      // envFilePath: ['.development.env', '.test.env'],
-      envFilePath: `.${process.env.NODE_ENV}.env`
+        process.env.ENV !== Environments.TEST,
+      envFilePath: "." + `${process.env.ENV}`.toLowerCase() + ".env"
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: SETTINGS.PATH.HOST,
-      port: Number(SETTINGS.PORT_DB) || 5432,
-      username: SETTINGS.PATH.USERNAME,
-      password: SETTINGS.PATH.PASSWORD,
-      database: SETTINGS.PATH.DATABASE,
-      // entities: [],
-      ssl: true,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
+      inject: [TypeOrmConfigService]
     }),
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-      },
-    }),
+    MailSendModule,
     BlogsModule,
     UsersModule,
     TestingModule,

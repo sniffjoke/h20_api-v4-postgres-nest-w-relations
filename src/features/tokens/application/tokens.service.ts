@@ -1,22 +1,30 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { SETTINGS } from "../../../core/settings/settings";
+import { ConfigService } from '@nestjs/config';
+import { ConfigurationType } from '../../../core/settings/env/configuration';
 
 @Injectable()
 export class TokensService {
   constructor(
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private configService: ConfigService<ConfigurationType, true>
   ) {
+    // const apiSettings = this.configService.get('apiSettings', {
+    //   infer: true,
+    // });
   }
 
   createTokens(userId: string, deviceId?: string) {
+    const apiSettings = this.configService.get('apiSettings', {
+      infer: true,
+    });
     const [accessToken, refreshToken] = [
       this.jwtService.sign(
         {
           _id: userId
         },
         {
-          secret: SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN,
+          secret: apiSettings.JWT_SECRET_ACCESS_TOKEN,
           expiresIn: "1000s"
         }
       ),
@@ -26,7 +34,7 @@ export class TokensService {
           deviceId
         },
         {
-          secret: SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN,
+          secret: apiSettings.JWT_SECRET_REFRESH_TOKEN,
           expiresIn: "2000s"
         }
       )
@@ -38,10 +46,13 @@ export class TokensService {
   }
 
   validateAccessToken(token: string) {
+    const apiSettings = this.configService.get('apiSettings', {
+      infer: true,
+    });
     try {
       const userData = this.jwtService.verify(
         token,
-        { secret: SETTINGS.VARIABLES.JWT_SECRET_ACCESS_TOKEN }
+        { secret: apiSettings.JWT_SECRET_ACCESS_TOKEN }
       );
       return userData;
     } catch (e) {
@@ -50,10 +61,13 @@ export class TokensService {
   }
 
   validateRefreshToken(token: string) {
+    const apiSettings = this.configService.get('apiSettings', {
+      infer: true,
+    });
     try {
       const userData = this.jwtService.verify(
         token,
-        { secret: SETTINGS.VARIABLES.JWT_SECRET_REFRESH_TOKEN }
+        { secret: apiSettings.JWT_SECRET_REFRESH_TOKEN }
       );
       return userData;
     } catch (e) {

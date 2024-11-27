@@ -1,13 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cors from "cors-ts";
-import {SETTINGS} from "./core/settings/settings";
 import { useContainer } from "class-validator";
 import { BadRequestExceptionFilter } from './core/exceptions/exception-filters/bad-request-exception-filter';
 import cookieParser from 'cookie-parser'
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { ConfigurationType } from './core/settings/configuration';
 import { ConfigService } from '@nestjs/config';
+import { ConfigurationType } from './core/settings/env/configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,6 +16,7 @@ async function bootstrap() {
   app.use(cors({
     // credentials: true,
   }))
+  // console.log('process.env: ', process.env);
   app.useGlobalFilters(new BadRequestExceptionFilter())
   useContainer(app.select(AppModule), {fallbackOnErrors: true})
   app.useGlobalPipes(
@@ -45,9 +45,10 @@ async function bootstrap() {
     infer: true,
   });
   await app.listen(
-    SETTINGS.PORT,
+    apiSettings.PORT,
     () => {
       console.log('DB connect');
+      console.log('Port: ', apiSettings.PORT);
       console.log('ENV: ', environmentSettings.currentEnv);
     }
   );

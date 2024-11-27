@@ -1,5 +1,5 @@
-import { IsEnum } from 'class-validator';
-import { EnvironmentVariable } from '../configuration';
+import { IsEnum } from "class-validator";
+import { EnvironmentVariable } from "./configuration";
 
 export enum Environments {
   DEVELOPMENT = 'DEVELOPMENT',
