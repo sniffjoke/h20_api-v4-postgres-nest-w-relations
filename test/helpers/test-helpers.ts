@@ -30,6 +30,13 @@ export class BlogsTestManager {
     return response
   }
 
+  async createBlogWOAuth(createModel: BlogCreateModel) {
+    const response = await request(this.app.getHttpServer())
+      .post('/sa/blogs')
+      .send(createModel)
+    return response
+  }
+
   async updateBlog(updModel: BlogCreateModel, blogId: string) {
     const apiSettings = this.configService.get('apiSettings', { infer: true });
     const response = await request(this.app.getHttpServer())
@@ -82,6 +89,133 @@ export const mockBlog = (n: number) => ({
 });
 
 // ------------------------------------------------------------------------ //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
