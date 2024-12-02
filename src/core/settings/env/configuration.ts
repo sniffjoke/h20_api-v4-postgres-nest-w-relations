@@ -45,6 +45,6 @@ export function validate(environmentVariables: Record<string, string>) {
 
 export default () => {
   const environmentVariables = process.env as EnvironmentVariable;
-  console.log('process.env.ENV =', environmentVariables.ENV);
+  // console.log('process.env.ENV =', environmentVariables.ENV);
   return Configuration.createConfig(environmentVariables);
 };
