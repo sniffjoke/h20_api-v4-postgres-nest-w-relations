@@ -37,6 +37,12 @@ export class PostsController {
     };
   }
 
+  @Get('posts/:id')
+  async getBlogById(@Param('id') id: string) {
+    const post = await this.postsQueryRepository.postOutput(id);
+    return post;
+  }
+
   @Post('sa/posts')
   @UseGuards(BasicAuthGuard)
   async createPost(@Body() dto: PostCreateModel, @Req() req: Request) {

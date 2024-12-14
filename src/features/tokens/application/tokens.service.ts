@@ -1,10 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from '@nestjs/config';
-import { ConfigurationType } from '../../../core/settings/env/configuration';
+import { Configuration, ConfigurationType } from '../../../core/settings/env/configuration';
+import { ApiSettings } from '../../../core/settings/env/api-settings';
 
 @Injectable()
 export class TokensService {
+  // apiSettings
   constructor(
     private readonly jwtService: JwtService,
     private configService: ConfigService<ConfigurationType, true>

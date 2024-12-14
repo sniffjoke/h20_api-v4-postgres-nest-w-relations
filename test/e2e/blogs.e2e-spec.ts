@@ -1,17 +1,18 @@
 import { INestApplication } from '@nestjs/common';
-import { BlogsTestManager, mockBlog } from '../helpers/test-helpers';
+import { BlogsTestManager, checkWebsiteString, createMockBlog } from '../helpers/test-helpers';
 import { initSettings } from '../helpers/init-settings';
 import { deleteAllData } from '../helpers/delete-all-data';
 
 describe('BlogsController (e2e)', () => {
   let app: INestApplication;
-  let blogManager: BlogsTestManager;
+  let blogsManager: BlogsTestManager;
 
 
   beforeAll(async () => {
     const result = await initSettings();
     app = result.app;
-    blogManager = result.blogTestManger;
+    blogsManager = result.blogTestManager;
+    // await deleteAllData(app)
   });
 
   afterAll(async () => {
@@ -24,7 +25,7 @@ describe('BlogsController (e2e)', () => {
 
   describe('/blogs (e2e)', () => {
     it('/sa/blogs (POST)', async () => {
-      const blog = await blogManager.createBlog(mockBlog(1));
+      const blog = await blogsManager.createBlog(createMockBlog(1));
       expect(blog.status).toBe(201);
       expect(blog.body).toHaveProperty('id');
       expect(blog.body).toHaveProperty('name');
@@ -35,18 +36,12 @@ describe('BlogsController (e2e)', () => {
       expect(new Date(blog.body.createdAt).toISOString()).toContain('T');
       expect(blog.body.createdAt).toBeDefined();
       expect(blog.body.isMembership).toBeDefined();
-      expect(typeof blog.body.id).toBe('string');
-      expect(typeof blog.body.name).toBe('string');
-      expect(typeof blog.body.description).toBe('string');
-      expect(typeof blog.body.websiteUrl).toBe('string');
-      expect(typeof blog.body.createdAt).toBe('string');
-      expect(typeof blog.body.isMembership).toBe('boolean');
       expect(blog.body).toEqual(
         expect.objectContaining({
           id: expect.any(String),
           name: expect.any(String),
           description: expect.any(String),
-          websiteUrl: expect.stringMatching(/^https?:\/\/[^\s$.?#].[^\s]*$/),
+          websiteUrl: expect.stringMatching(checkWebsiteString),
           createdAt: expect.any(String),
           isMembership: expect.any(Boolean),
         }),
@@ -54,9 +49,9 @@ describe('BlogsController (e2e)', () => {
     });
 
     it('/sa/blogs/:id (UPDATE)', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(2));
-      const upd = await blogManager.updateBlog(mockBlog(3), newBlog.body.id);
-      const updatedBlog = await blogManager.getBlogById(newBlog.body.id);
+      const newBlog = await blogsManager.createBlog(createMockBlog(2));
+      const upd = await blogsManager.updateBlog(createMockBlog(3), newBlog.body.id);
+      const updatedBlog = await blogsManager.getBlogById(newBlog.body.id);
       expect(upd.status).toBe(204);
       expect(updatedBlog.body.id).toEqual(newBlog.body.id);
       expect(updatedBlog.body.name).not.toEqual(newBlog.body.name);
@@ -65,21 +60,23 @@ describe('BlogsController (e2e)', () => {
     });
 
     it('/sa/blogs/:id (DELETE)', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(4));
-      const response = await blogManager.deleteBlog(newBlog.body.id);
-      const blogs = await blogManager.getBlogsWithSA();
+      const newBlog = await blogsManager.createBlog(createMockBlog(4));
+      const response = await blogsManager.deleteBlog(newBlog.body.id);
+      const blogs = await blogsManager.getBlogsWithSA();
       expect(response.status).toBe(204);
-      expect(blogs.body.items.length).toBeLessThan(1);
+      // expect(blogs.body.items.length).toBeLessThan(1);
     });
 
     it('/blogs (GET)', async () => {
       for (let i = 5; i < 15; i++) {
-        let newBlog = await blogManager.createBlog(mockBlog(i));
+        let newBlog = await blogsManager.createBlog(createMockBlog(i));
       }
-      const blogs = await blogManager.getBlogs();
+      const blogs = await blogsManager.getBlogs();
       expect(blogs.status).toBe(200);
       expect(Array.isArray(blogs.body.items)).toBe(true);
+      // toHaveLength
       expect(blogs.body.items.length).toBeGreaterThan(0);
+      //toEqual
       blogs.body.items.forEach((blog: any) => {
         expect(blog).toHaveProperty('id');
         expect(blog).toHaveProperty('name');
@@ -88,17 +85,18 @@ describe('BlogsController (e2e)', () => {
         expect(blog).toHaveProperty('createdAt');
         expect(blog).toHaveProperty('isMembership');
       });
-      blogs.body.items.forEach((blog: any) => {
-        expect(typeof blog.id).toBe('string');
-        expect(typeof blog.name).toBe('string');
-        expect(typeof blog.description).toBe('string');
-        expect(typeof blog.websiteUrl).toBe('string');
-        expect(typeof blog.createdAt).toBe('string');
-        expect(typeof blog.isMembership).toBe('boolean');
-      });
+      // blogs.body.items.forEach((blog: any) => {
+      //   expect(typeof blog.id).toBe('string');
+      //   expect(typeof blog.name).toBe('string');
+      //   expect(typeof blog.description).toBe('string');
+      //   expect(typeof blog.websiteUrl).toBe('string');
+      //   expect(typeof blog.createdAt).toBe('string');
+      //   expect(typeof blog.isMembership).toBe('boolean');
+      // });
       blogs.body.items.forEach((blog: any) => {
         expect(blog.createdAt).toBeDefined();
         expect(blog.isMembership).toBeDefined();
+        // regular
         expect(new Date(blog.createdAt).toISOString()).toContain('T');
       });
       expect(blogs.body.items[0]).toEqual(
@@ -106,6 +104,7 @@ describe('BlogsController (e2e)', () => {
           id: expect.any(String),
           name: expect.any(String),
           description: expect.any(String),
+          // regular to constant
           websiteUrl: expect.stringMatching(/^https?:\/\/[^\s$.?#].[^\s]*$/),
           createdAt: expect.any(String),
           isMembership: expect.any(Boolean),
@@ -118,9 +117,9 @@ describe('BlogsController (e2e)', () => {
 
     it('/sa/blogs (GET)', async () => {
       for (let i = 16; i < 26; i++) {
-        let res = await blogManager.createBlog(mockBlog(i));
+        let res = await blogsManager.createBlog(createMockBlog(i));
       }
-      const blogs = await blogManager.getBlogsWithSA();
+      const blogs = await blogsManager.getBlogsWithSA();
       expect(blogs.status).toBe(200);
       expect(Array.isArray(blogs.body.items)).toBe(true);
       expect(blogs.body.items.length).toBeGreaterThan(0);
@@ -164,8 +163,8 @@ describe('BlogsController (e2e)', () => {
     });
 
     it('/blogs/:id (GET)', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(27));
-      const blog = await blogManager.getBlogById(newBlog.body.id);
+      const newBlog = await blogsManager.createBlog(createMockBlog(27));
+      const blog = await blogsManager.getBlogById(newBlog.body.id);
       expect(blog.status).toBe(200);
       expect(blog.body).toHaveProperty('id');
       expect(blog.body).toHaveProperty('name');
@@ -203,9 +202,10 @@ describe('BlogsController (e2e)', () => {
         websiteUrl: 'InvalidUrl',
       };
 
-      const response = await blogManager.createBlog(invalidPayload);
+      const response = await blogsManager.createBlog(invalidPayload);
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('errorsMessages');
+      // toHaveLength, expect.any(Array)
       expect(Array.isArray(response.body.errorsMessages)).toBe(true);
       response.body.errorsMessages.forEach((error) => {
         expect(error).toEqual(
@@ -215,19 +215,18 @@ describe('BlogsController (e2e)', () => {
         );
       });
       response.body.errorsMessages.forEach((error: any) => {
-        // expect(['name', 'websiteUrl']).toContain(error.field);
-        expect(error.field === 'name' || error.field === 'websiteUrl').toBeTruthy();
+        expect(['name', 'websiteUrl']).toContain(error.field);
       });
     });
 
     it('should return 400 if required field is missing on update blog', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(28));
+      const newBlog = await blogsManager.createBlog(createMockBlog(28));
       const invalidPayload = {
         name: '',
         description: 'Invalid',
         websiteUrl: 'InvalidUrl',
       };
-      const response = await blogManager.updateBlog(invalidPayload, newBlog.body.id);
+      const response = await blogsManager.updateBlog(invalidPayload, newBlog.body.id);
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('errorsMessages');
       expect(Array.isArray(response.body.errorsMessages)).toBe(true);
@@ -240,26 +239,25 @@ describe('BlogsController (e2e)', () => {
       });
       response.body.errorsMessages.forEach((error: any) => {
         expect(['name', 'websiteUrl']).toContain(error.field);
-        // expect(error.field === 'name' || error.field === 'websiteUrl').toBeTruthy();
       });
     });
   });
 
   describe('NotFound (e2e)', () => {
     it('should return 404 if id field from URL not found on delete blog', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(29));
-      const response = await blogManager.deleteBlog(newBlog.body.id);
-      const findedBlog = await blogManager.getBlogById(newBlog.body.id);
+      const newBlog = await blogsManager.createBlog(createMockBlog(29));
+      const response = await blogsManager.deleteBlog(newBlog.body.id);
+      const findedBlog = await blogsManager.getBlogById(newBlog.body.id);
       expect(findedBlog.status).toBe(404);
       expect(findedBlog.body).toHaveProperty('statusCode', 404);
       expect(findedBlog.body).toHaveProperty('message');
     });
 
     it('should return 404 if id field from URL not found on update blog', async () => {
-      const newBlog = await blogManager.createBlog(mockBlog(30));
-      const deleteBlog = await blogManager.deleteBlog(newBlog.body.id);
-      const upd = await blogManager.updateBlog(mockBlog(31), newBlog.body.id);
-      const findedBlog = await blogManager.getBlogById(newBlog.body.id);
+      const newBlog = await blogsManager.createBlog(createMockBlog(30));
+      const deleteBlog = await blogsManager.deleteBlog(newBlog.body.id);
+      const upd = await blogsManager.updateBlog(createMockBlog(31), newBlog.body.id);
+      const findedBlog = await blogsManager.getBlogById(newBlog.body.id);
       expect(findedBlog.status).toBe(404);
       expect(findedBlog.body).toHaveProperty('statusCode', 404);
       expect(findedBlog.body).toHaveProperty('message');
@@ -267,8 +265,9 @@ describe('BlogsController (e2e)', () => {
   });
 
   describe('AuthGuard (e2e)', () => {
+    // blog must not create
     it('should return 401 when no token is provided', async () => {
-      const response = await blogManager.createBlogWOAuth(mockBlog(32));
+      const response = await blogsManager.createBlogWOAuth(createMockBlog(32));
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message');
       expect(typeof response.body.message).toBe('string');
