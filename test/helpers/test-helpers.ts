@@ -8,6 +8,7 @@ import {
 } from '../../src/features/posts/api/models/input/create-post.input.model';
 import { CreateUserDto, EmailConfirmationModel } from '../../src/features/users/api/models/input/create-user.dto';
 import { UsersService } from '../../src/features/users/application/users.service';
+import { LoginDto } from '../../src/features/auth/api/models/input/auth.input.model';
 
 // ------------------------------------------------------------------------ //
 
@@ -205,20 +206,6 @@ export class UsersTestManager {
       .set({ 'Authorization': `Basic ` + codeAuth(apiSettings.ADMIN) })
     return response
   }
-
-  // async getPosts() {
-  //   const response = await request(this.app.getHttpServer())
-  //     .get('/posts')
-  //   return response
-  // }
-  //
-  // async createPostWOAuth(createModel: PostCreateModelWithParams, blogId: string) {
-  //   const response = await request(this.app.getHttpServer())
-  //     .post('/sa/blogs/' + `${blogId}` + '/posts')
-  //     .send(createModel)
-  //   return response
-  // }
-
 }
 
 
@@ -230,12 +217,61 @@ export const createMockUser = (uniqueIndex: number) => ({
     password: 'qwerty1'
 })
 
-// // ------------------------------------------------------------------------ //
-//
-// export const mockLoginData = (n: number): LoginUserDto => ({
-//     loginOrEmail: 'login-' + `${n}`,
-//     password: 'qwerty1'
-// })
+// ------------------------------------------------------------------------ //
+
+export class AuthTestManager {
+  constructor(
+    protected readonly app: INestApplication,
+    private configService: ConfigService<ConfigurationType, true>,
+  ) {
+  }
+
+  async login(createModel: LoginDto) {
+    const response = await request(this.app.getHttpServer())
+      .post('/auth/login')
+      .set('user-agent', 'Custom-agent-v1')
+      .send(createModel)
+    return response;
+  }
+
+  async refresh(refreshToken: string) {
+    const response = await request(this.app.getHttpServer())
+      .post('/auth/refresh-token')
+      .set('Cookie', [`refreshToken=${refreshToken}`])
+    return response;
+  }
+
+  // async createUserWOAuth(createModel: CreateUserDto, emailConfirmation: EmailConfirmationModel) {
+  //   const response = await request(this.app.getHttpServer())
+  //     .post('/sa/users')
+  //     .send({ ...createModel, emailConfirmation })
+  //   return response;
+  // }
+  //
+  // async getUsersWithSA() {
+  //   const apiSettings = this.configService.get('apiSettings', { infer: true });
+  //   const response = await request(this.app.getHttpServer())
+  //     .get('/sa/users')
+  //     .set({ 'Authorization': `Basic ` + codeAuth(apiSettings.ADMIN) });
+  //   return response;
+  // }
+
+  // async deleteUser(userId: string) {
+  //   const apiSettings = this.configService.get('apiSettings', { infer: true });
+  //   const response = await request(this.app.getHttpServer())
+  //     .delete('/sa/users/' + `${userId}`)
+  //     .set({ 'Authorization': `Basic ` + codeAuth(apiSettings.ADMIN) })
+  //   return response
+  // }
+}
+
+
+// ------------------------------------------------------------------------ //
+
+export const mockLoginData = (uniqueIndex: number): LoginDto => ({
+    loginOrEmail: 'login-' + `${uniqueIndex}`,
+    password: 'qwerty1'
+})
 //
 // // ------------------------------------------------------------------------ //
 //
@@ -253,22 +289,7 @@ export const createMockUser = (uniqueIndex: number) => ({
 // // ------------------------------------------------------------------------ //
 
 // // ------------------------------------------------------------------------ //
-//
-// export const testCreateUser = async (n: number) => {
-//     const userData: UserDBType = mockUser(n)
-//
-//     const newUser = await req
-//         .post(SETTINGS.PATH.USERS)
-//         .set({'Authorization': `Basic ` + codeAuth(SETTINGS.VARIABLES.ADMIN)})
-//         .send(userData)
-//         .expect(201)
-//
-//     return {
-//         newUser,
-//         userData
-//     }
-// }
-//
+
 // // ------------------------------------------------------------------------ //
 //
 // export const testCreateComment = async (n: number, newUser: any, postId: string, token: string) => {
